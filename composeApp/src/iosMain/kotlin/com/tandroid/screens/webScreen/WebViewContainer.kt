@@ -5,15 +5,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.interop.UIKitView
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.readValues
-import platform.CoreGraphics.*
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLRequest
-import platform.WebKit.*
+import platform.WebKit.WKWebView
+import platform.WebKit.WKWebViewConfiguration
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable

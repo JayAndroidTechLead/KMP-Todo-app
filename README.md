@@ -1,5 +1,4 @@
 # Kotlin Multiplatform TODO app 
 
 Video:
-
-![Demo Preview](video/demo.gif)
+<img src="video/demo.gif" width="400" />

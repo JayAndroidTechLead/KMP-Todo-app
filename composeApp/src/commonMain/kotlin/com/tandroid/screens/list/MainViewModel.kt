@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class MainViewModel(noteRepository: NoteRepository) : ViewModel() {
 
     private val url = "https://qa.pilloo.ai/GeneratedPDF/Companies/202/2025-2026/DL.pdf"
@@ -30,6 +33,9 @@ class MainViewModel(noteRepository: NoteRepository) : ViewModel() {
 
     init {
         viewModelScope.launch {
+            for (i in 1..5){
+                noteRepository.addNote("New Note $i", "New Note body $i", Clock.System.now().toEpochMilliseconds())
+            }
             noteRepository.getObjects().collect {
                 _objects.value = it
             }

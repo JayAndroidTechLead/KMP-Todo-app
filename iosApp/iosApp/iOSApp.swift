@@ -3,8 +3,9 @@ import ComposeApp
 
 @main
 struct iOSApp: App {
+
     init() {
-        KoinKt.doInitKoin()
+        _ = KoinKt.doInitKoin(driverFactory: DatabaseDriverFactory())
     }
 
     var body: some Scene {

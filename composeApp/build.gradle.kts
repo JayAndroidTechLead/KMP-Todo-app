@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinxSerialization)
+    id("app.cash.sqldelight") version "2.1.0"
 }
 
 kotlin {
@@ -26,6 +27,9 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+        iosTarget.binaries.all {
+            linkerOpts("-lsqlite3")
+        }
     }
 
     sourceSets {
@@ -33,9 +37,12 @@ kotlin {
             implementation(libs.androidx.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.browser)
+            implementation(libs.android.driver)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.native.driver)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -57,6 +64,9 @@ kotlin {
             implementation(libs.coil.network.ktor)
             implementation(libs.koin.core)
             implementation(libs.koin.compose.viewmodel)
+
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.sqlite.driver)
         }
     }
 }
@@ -90,5 +100,12 @@ android {
 
 dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
-    implementation("androidx.browser:browser:1.9.0")
+}
+
+sqldelight {
+    databases {
+        create("NoteDatabase") {
+            packageName.set("com.tandroid.sqldelight")
+        }
+    }
 }

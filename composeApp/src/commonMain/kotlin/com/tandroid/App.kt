@@ -11,16 +11,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.tandroid.screens.detail.DetailScreen
 import com.tandroid.screens.list.MainScreen
 import com.tandroid.screens.webScreen.WebScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
 object MainDestination
-
-@Serializable
-data class DetailDestination(val objectId: Int)
 
 @Serializable
 data class WebDestination(val url: String?,val html: String?)
@@ -37,7 +33,7 @@ fun App() {
                     MainScreen(navigateToWebScreen = { webURL, html->
                         navController.navigate(WebDestination(webURL,html))
                     },navigateToDetails = { objectId ->
-                        navController.navigate(DetailDestination(objectId))
+
                     })
                 }
                 composable<WebDestination> { backStackEntry ->
@@ -45,14 +41,6 @@ fun App() {
                         navigateBack = {
                             navController.popBackStack()
                         })
-                }
-                composable<DetailDestination> { backStackEntry ->
-                    DetailScreen(
-                        objectId = backStackEntry.toRoute<DetailDestination>().objectId,
-                        navigateBack = {
-                            navController.popBackStack()
-                        }
-                    )
                 }
             }
         }

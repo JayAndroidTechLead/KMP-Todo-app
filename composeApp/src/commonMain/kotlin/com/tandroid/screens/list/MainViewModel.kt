@@ -2,13 +2,16 @@ package com.tandroid.screens.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tandroid.data.MuseumObject
-import com.tandroid.data.MuseumRepository
+import com.tandroid.data.Note
+import com.tandroid.data.NoteRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class MainViewModel(museumRepository: MuseumRepository) : ViewModel() {
+class MainViewModel(noteRepository: NoteRepository) : ViewModel() {
 
     private val url = "https://qa.pilloo.ai/GeneratedPDF/Companies/202/2025-2026/DL.pdf"
     private val htmlText = "<h2>Welcome to KMP Notes</h2>\n" +
@@ -23,8 +26,17 @@ class MainViewModel(museumRepository: MuseumRepository) : ViewModel() {
             "}\n" +
             "</script>"
 
-    val objects: StateFlow<List<MuseumObject>> =
-        museumRepository.getObjects()
+    private val _objects =  MutableStateFlow<List<Note>>(emptyList())
+
+    init {
+        viewModelScope.launch {
+            noteRepository.getObjects().collect {
+                _objects.value = it
+            }
+        }
+    }
+
+    val objects: StateFlow<List<Note>> = _objects.asStateFlow()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun getPreviewWebUrl() = url

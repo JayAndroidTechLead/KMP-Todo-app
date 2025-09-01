@@ -1,11 +1,8 @@
 package com.tandroid.di
 
-import com.tandroid.data.InMemoryMuseumStorage
-import com.tandroid.data.KtorMuseumApi
-import com.tandroid.data.MuseumApi
-import com.tandroid.data.MuseumRepository
-import com.tandroid.data.MuseumStorage
-import com.tandroid.screens.detail.DetailViewModel
+import com.tandroid.data.DatabaseDriverFactory
+import com.tandroid.data.NoteRepository
+import com.tandroid.data.createDatabase
 import com.tandroid.screens.list.MainViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -26,25 +23,27 @@ val dataModule = module {
         }
     }
 
-    single<MuseumApi> { KtorMuseumApi(get()) }
-    single<MuseumStorage> { InMemoryMuseumStorage() }
     single {
-        MuseumRepository(get(), get()).apply {
-            initialize()
+
+        NoteRepository(get()).apply {
         }
     }
 }
 
-val viewModelModule = module {
-    factoryOf(::MainViewModel)
-    factoryOf(::DetailViewModel)
+fun databaseModule(driverFactory: DatabaseDriverFactory) = module {
+    single { createDatabase(driverFactory) } // returns NoteDatabase
 }
 
-fun initKoin() {
+val viewModelModule = module {
+    factoryOf(::MainViewModel)
+}
+
+fun initKoin(driverFactory: DatabaseDriverFactory) {
     startKoin {
         modules(
             dataModule,
             viewModelModule,
+            databaseModule(driverFactory = driverFactory) ,
         )
     }
 }

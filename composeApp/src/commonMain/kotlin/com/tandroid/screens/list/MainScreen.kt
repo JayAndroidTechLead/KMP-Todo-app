@@ -1,43 +1,46 @@
 package com.tandroid.screens.list
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
-import com.tandroid.data.MuseumObject
+import com.tandroid.data.Note
 import com.tandroid.screens.EmptyScreenContent
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import quick_todo_app.composeapp.generated.resources.Res
@@ -45,12 +48,14 @@ import quick_todo_app.composeapp.generated.resources.add_todo
 import quick_todo_app.composeapp.generated.resources.home
 import quick_todo_app.composeapp.generated.resources.open_web_link
 import quick_todo_app.composeapp.generated.resources.view_html
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant.Companion.fromEpochMilliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navigateToWebScreen: (url: String?,html: String?) -> Unit,
-    navigateToDetails: (objectId: Int) -> Unit
+    navigateToDetails: (objectId: Long) -> Unit
 ) {
     val viewModel = koinViewModel<MainViewModel>()
     val objects by viewModel.objects.collectAsStateWithLifecycle()
@@ -105,48 +110,51 @@ fun MainScreen(
 
 @Composable
 private fun ObjectGrid(
-    objects: List<MuseumObject>,
-    onObjectClick: (Int) -> Unit,
+    objects: List<Note>,
+    onObjectClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(180.dp),
+    LazyColumn (
         modifier = modifier.fillMaxSize()
     ) {
-        items(objects, key = { it.objectID }) { obj ->
+        items(objects) { obj ->
             ObjectFrame(
-                obj = obj,
-                onClick = { onObjectClick(obj.objectID) },
+                note = obj,
+                onClick = { onObjectClick(obj.id) },
+                onDelete = { onObjectClick(obj.id) },
             )
         }
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun ObjectFrame(
-    obj: MuseumObject,
+    note: Note,
     onClick: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier
-            .padding(8.dp)
-            .clickable { onClick() }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation()
     ) {
-        AsyncImage(
-            model = obj.primaryImageSmall,
-            contentDescription = obj.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .background(Color.LightGray),
-        )
+        Column(Modifier.padding(16.dp)) {
+            Text(note.title, style = MaterialTheme.typography.titleLarge)
 
-        Spacer(Modifier.height(2.dp))
+            val instant = fromEpochMilliseconds(note.createdAt)
 
-        Text(obj.title, style = MaterialTheme.typography.titleMedium)
-        Text(obj.artistDisplayName, style = MaterialTheme.typography.bodyMedium)
-        Text(obj.objectDate, style = MaterialTheme.typography.bodySmall)
+            val dateTime: LocalDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+            val date: LocalDate = dateTime.date
+            Text("Created: $date", style = MaterialTheme.typography.bodySmall)
+
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onDelete) {
+                Text("Delete")
+            }
+        }
     }
 }
